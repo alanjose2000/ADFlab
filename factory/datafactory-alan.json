@@ -1,0 +1,9 @@
+{
+	"name": "datafactory-alan",
+	"location": "centralindia",
+	"identity": {
+		"type": "SystemAssigned",
+		"principalId": "4b3468f4-cc5f-40c2-a859-b7c81fa570b9",
+		"tenantId": "527fcaf1-bdbd-4df7-8930-fc98fbcc3de9"
+	}
+}

@@ -1,0 +1,341 @@
+{
+	"name": "GetMetaData",
+	"properties": {
+		"activities": [
+			{
+				"name": "Get Metadata1",
+				"type": "GetMetadata",
+				"dependsOn": [],
+				"policy": {
+					"timeout": "0.12:00:00",
+					"retry": 0,
+					"retryIntervalInSeconds": 30,
+					"secureOutput": false,
+					"secureInput": false
+				},
+				"userProperties": [],
+				"typeProperties": {
+					"dataset": {
+						"referenceName": "GetMetaData",
+						"type": "DatasetReference"
+					},
+					"fieldList": [
+						"itemName",
+						"itemType",
+						"lastModified",
+						"childItems"
+					],
+					"storeSettings": {
+						"type": "AzureBlobFSReadSettings",
+						"recursive": true,
+						"enablePartitionDiscovery": false
+					},
+					"formatSettings": {
+						"type": "DelimitedTextReadSettings"
+					}
+				}
+			},
+			{
+				"name": "ForEach1",
+				"type": "ForEach",
+				"dependsOn": [
+					{
+						"activity": "Get Metadata1",
+						"dependencyConditions": [
+							"Succeeded"
+						]
+					}
+				],
+				"userProperties": [],
+				"typeProperties": {
+					"items": {
+						"value": "@activity('Get Metadata1').output.childItems",
+						"type": "Expression"
+					},
+					"activities": [
+						{
+							"name": "Get Metadata2",
+							"type": "GetMetadata",
+							"dependsOn": [],
+							"policy": {
+								"timeout": "0.12:00:00",
+								"retry": 0,
+								"retryIntervalInSeconds": 30,
+								"secureOutput": false,
+								"secureInput": false
+							},
+							"userProperties": [],
+							"typeProperties": {
+								"dataset": {
+									"referenceName": "GetMetaDatacsv",
+									"type": "DatasetReference",
+									"parameters": {
+										"FileName": {
+											"value": "@item().name",
+											"type": "Expression"
+										}
+									}
+								},
+								"fieldList": [
+									"itemName",
+									"itemType",
+									"lastModified",
+									"size"
+								],
+								"storeSettings": {
+									"type": "AzureBlobFSReadSettings",
+									"recursive": true,
+									"enablePartitionDiscovery": false
+								},
+								"formatSettings": {
+									"type": "DelimitedTextReadSettings"
+								}
+							}
+						},
+						{
+							"name": "DateToday",
+							"type": "SetVariable",
+							"dependsOn": [
+								{
+									"activity": "Get Metadata2",
+									"dependencyConditions": [
+										"Succeeded"
+									]
+								}
+							],
+							"policy": {
+								"secureOutput": false,
+								"secureInput": false
+							},
+							"userProperties": [],
+							"typeProperties": {
+								"variableName": "TodayDate",
+								"value": {
+									"value": "@substring(utcNow(),0,10 )",
+									"type": "Expression"
+								}
+							}
+						},
+						{
+							"name": "FileDate",
+							"type": "SetVariable",
+							"dependsOn": [
+								{
+									"activity": "Get Metadata2",
+									"dependencyConditions": [
+										"Succeeded"
+									]
+								}
+							],
+							"policy": {
+								"secureOutput": false,
+								"secureInput": false
+							},
+							"userProperties": [],
+							"typeProperties": {
+								"variableName": "FileDate",
+								"value": {
+									"value": "@substring(activity('Get Metadata2').output.lastModified,0,10)",
+									"type": "Expression"
+								}
+							}
+						},
+						{
+							"name": "If Condition1",
+							"type": "IfCondition",
+							"dependsOn": [
+								{
+									"activity": "FileDate",
+									"dependencyConditions": [
+										"Succeeded"
+									]
+								},
+								{
+									"activity": "DateToday",
+									"dependencyConditions": [
+										"Succeeded"
+									]
+								}
+							],
+							"userProperties": [],
+							"typeProperties": {
+								"expression": {
+									"value": "@equals(variables('FileDate'), variables('TodayDate'))",
+									"type": "Expression"
+								},
+								"ifFalseActivities": [
+									{
+										"name": "FileNotUpdated",
+										"type": "Wait",
+										"dependsOn": [],
+										"userProperties": [],
+										"typeProperties": {
+											"waitTimeInSeconds": 1
+										}
+									}
+								],
+								"ifTrueActivities": [
+									{
+										"name": "AdlsToSql1",
+										"type": "Copy",
+										"dependsOn": [],
+										"policy": {
+											"timeout": "0.12:00:00",
+											"retry": 0,
+											"retryIntervalInSeconds": 30,
+											"secureOutput": false,
+											"secureInput": false
+										},
+										"userProperties": [],
+										"typeProperties": {
+											"source": {
+												"type": "DelimitedTextSource",
+												"storeSettings": {
+													"type": "AzureBlobFSReadSettings",
+													"recursive": true,
+													"enablePartitionDiscovery": false
+												},
+												"formatSettings": {
+													"type": "DelimitedTextReadSettings"
+												}
+											},
+											"sink": {
+												"type": "DelimitedTextSink",
+												"storeSettings": {
+													"type": "AzureBlobFSWriteSettings"
+												},
+												"formatSettings": {
+													"type": "DelimitedTextWriteSettings",
+													"quoteAllText": true,
+													"fileExtension": ".txt"
+												}
+											},
+											"enableStaging": false,
+											"translator": {
+												"type": "TabularTranslator",
+												"mappings": [
+													{
+														"source": {
+															"name": "OrderID",
+															"type": "String",
+															"physicalType": "String"
+														},
+														"sink": {
+															"name": "OrderID",
+															"type": "String",
+															"physicalType": "nvarchar"
+														}
+													},
+													{
+														"source": {
+															"name": "OrderDate",
+															"type": "String",
+															"physicalType": "String"
+														},
+														"sink": {
+															"name": "OrderDate",
+															"type": "String",
+															"physicalType": "nvarchar"
+														}
+													},
+													{
+														"source": {
+															"name": "CustomerID",
+															"type": "String",
+															"physicalType": "String"
+														},
+														"sink": {
+															"name": "CustomerID",
+															"type": "String",
+															"physicalType": "nvarchar"
+														}
+													},
+													{
+														"source": {
+															"name": "ProductID",
+															"type": "String",
+															"physicalType": "String"
+														},
+														"sink": {
+															"name": "ProductID",
+															"type": "String",
+															"physicalType": "nvarchar"
+														}
+													},
+													{
+														"source": {
+															"name": "Quantity",
+															"type": "String",
+															"physicalType": "String"
+														},
+														"sink": {
+															"name": "Quantity",
+															"type": "String",
+															"physicalType": "nvarchar"
+														}
+													},
+													{
+														"source": {
+															"name": "TotalAmount",
+															"type": "String",
+															"physicalType": "String"
+														},
+														"sink": {
+															"name": "TotalAmount",
+															"type": "String",
+															"physicalType": "nvarchar"
+														}
+													}
+												],
+												"typeConversion": true,
+												"typeConversionSettings": {
+													"allowDataTruncation": true,
+													"treatBooleanAsNumber": false
+												}
+											}
+										},
+										"inputs": [
+											{
+												"referenceName": "ParameterizedCsvData",
+												"type": "DatasetReference",
+												"parameters": {
+													"FileName": {
+														"value": "@activity('Get Metadata2').output.itemName",
+														"type": "Expression"
+													}
+												}
+											}
+										],
+										"outputs": [
+											{
+												"referenceName": "DelimitedText1",
+												"type": "DatasetReference",
+												"parameters": {
+													"FileName": {
+														"value": "@concat(variables('FileDate'),'_',activity('Get Metadata2').output.itemName)",
+														"type": "Expression"
+													}
+												}
+											}
+										]
+									}
+								]
+							}
+						}
+					]
+				}
+			}
+		],
+		"variables": {
+			"TodayDate": {
+				"type": "String"
+			},
+			"FileDate": {
+				"type": "String"
+			}
+		},
+		"annotations": [],
+		"lastPublishTime": "2025-04-25T12:55:02Z"
+	},
+	"type": "Microsoft.DataFactory/factories/pipelines"
+}

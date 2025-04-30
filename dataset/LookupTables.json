@@ -1,0 +1,43 @@
+{
+	"name": "LookupTables",
+	"properties": {
+		"linkedServiceName": {
+			"referenceName": "AzureSqlDatabase",
+			"type": "LinkedServiceReference"
+		},
+		"annotations": [],
+		"type": "AzureSqlTable",
+		"schema": [
+			{
+				"name": "ID",
+				"type": "int",
+				"precision": 10
+			},
+			{
+				"name": "Filename",
+				"type": "varchar"
+			},
+			{
+				"name": "Adls_loc",
+				"type": "varchar"
+			},
+			{
+				"name": "LandingSchema",
+				"type": "varchar"
+			},
+			{
+				"name": "LandingTable",
+				"type": "varchar"
+			},
+			{
+				"name": "Load_Freq",
+				"type": "varchar"
+			}
+		],
+		"typeProperties": {
+			"schema": "Cntrl",
+			"table": "MetadataLab"
+		}
+	},
+	"type": "Microsoft.DataFactory/factories/datasets"
+}
