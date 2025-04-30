@@ -1,0 +1,81 @@
+{
+	"name": "Parquet1",
+	"properties": {
+		"linkedServiceName": {
+			"referenceName": "AzureDataLakeStorage",
+			"type": "LinkedServiceReference"
+		},
+		"annotations": [],
+		"type": "Parquet",
+		"typeProperties": {
+			"location": {
+				"type": "AzureBlobFSLocation",
+				"fileName": "Order.parquet",
+				"fileSystem": "data"
+			},
+			"compressionCodec": "snappy"
+		},
+		"schema": [
+			{
+				"name": "OrderID",
+				"type": "UTF8"
+			},
+			{
+				"name": "OrderDate",
+				"type": "DATE"
+			},
+			{
+				"name": "Quantity",
+				"type": "INT32"
+			},
+			{
+				"name": "UnitPrice",
+				"type": "FLOAT"
+			},
+			{
+				"name": "SalesExecID",
+				"type": "UTF8"
+			},
+			{
+				"name": "ProductID",
+				"type": "UTF8"
+			},
+			{
+				"name": "ProductName",
+				"type": "UTF8"
+			},
+			{
+				"name": "Product_Category",
+				"type": "UTF8"
+			},
+			{
+				"name": "CustomerID",
+				"type": "UTF8"
+			},
+			{
+				"name": "CustomerName",
+				"type": "UTF8"
+			},
+			{
+				"name": "Phone",
+				"type": "UTF8"
+			},
+			{
+				"name": "City",
+				"type": "UTF8"
+			},
+			{
+				"name": "Country",
+				"type": "UTF8"
+			},
+			{
+				"name": "Age",
+				"type": "INT32"
+			},
+			{
+				"name": "CustomerCat",
+				"type": "UTF8"
+			}
+		]
+	}
+}
