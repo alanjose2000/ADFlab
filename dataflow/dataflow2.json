@@ -54,6 +54,20 @@
 						"type": "DatasetReference"
 					},
 					"name": "ProductRankFinal"
+				},
+				{
+					"dataset": {
+						"referenceName": "AzureSqlTable5",
+						"type": "DatasetReference"
+					},
+					"name": "AggregatedData"
+				},
+				{
+					"dataset": {
+						"referenceName": "OrderFinal",
+						"type": "DatasetReference"
+					},
+					"name": "OrderFinal"
 				}
 			],
 			"transformations": [
@@ -95,6 +109,9 @@
 				},
 				{
 					"name": "window1"
+				},
+				{
+					"name": "DataSplit"
 				}
 			],
 			"scriptLines": [
@@ -230,6 +247,9 @@
 				"aggregate2 window(over({Product Category}),",
 				"     desc(TotalQuantity, true),",
 				"     RankProd = rank()) ~> window1",
+				"CustAgeCat split(CustomerCat=='Young',",
+				"     CustomerCat=='Adult',",
+				"     disjoint: false) ~> DataSplit@(Young, Adult, SeniorCitizen)",
 				"window1 sink(allowSchemaDrift: true,",
 				"     validateSchema: false,",
 				"     deletable:false,",
@@ -239,7 +259,33 @@
 				"     format: 'table',",
 				"     skipDuplicateMapInputs: true,",
 				"     skipDuplicateMapOutputs: true,",
-				"     errorHandlingOption: 'stopOnFirstError') ~> ProductRankFinal"
+				"     errorHandlingOption: 'stopOnFirstError') ~> ProductRankFinal",
+				"window1 sink(allowSchemaDrift: true,",
+				"     validateSchema: false,",
+				"     deletable:false,",
+				"     insertable:true,",
+				"     updateable:false,",
+				"     upsertable:false,",
+				"     format: 'table',",
+				"     skipDuplicateMapInputs: true,",
+				"     skipDuplicateMapOutputs: true,",
+				"     errorHandlingOption: 'stopOnFirstError') ~> AggregatedData",
+				"CustAgeCat sink(allowSchemaDrift: true,",
+				"     validateSchema: false,",
+				"     input(",
+				"          OrderID as string,",
+				"          OrderDate as string,",
+				"          ProductID as string,",
+				"          Quantity as string,",
+				"          UnitPrice as string,",
+				"          CustomerID as string,",
+				"          SalesExecID as string",
+				"     ),",
+				"     umask: 0022,",
+				"     preCommands: [],",
+				"     postCommands: [],",
+				"     skipDuplicateMapInputs: true,",
+				"     skipDuplicateMapOutputs: true) ~> OrderFinal"
 			]
 		}
 	}
