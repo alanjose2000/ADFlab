@@ -50,13 +50,6 @@
 			"sinks": [
 				{
 					"dataset": {
-						"referenceName": "DataflowOp",
-						"type": "DatasetReference"
-					},
-					"name": "ProductRankFinal"
-				},
-				{
-					"dataset": {
 						"referenceName": "AzureSqlTable5",
 						"type": "DatasetReference"
 					},
@@ -250,16 +243,6 @@
 				"CustAgeCat split(CustomerCat=='Young',",
 				"     CustomerCat=='Adult',",
 				"     disjoint: false) ~> DataSplit@(Young, Adult, SeniorCitizen)",
-				"window1 sink(allowSchemaDrift: true,",
-				"     validateSchema: false,",
-				"     deletable:false,",
-				"     insertable:true,",
-				"     updateable:false,",
-				"     upsertable:false,",
-				"     format: 'table',",
-				"     skipDuplicateMapInputs: true,",
-				"     skipDuplicateMapOutputs: true,",
-				"     errorHandlingOption: 'stopOnFirstError') ~> ProductRankFinal",
 				"window1 sink(allowSchemaDrift: true,",
 				"     validateSchema: false,",
 				"     deletable:false,",
