@@ -1,0 +1,699 @@
+{
+	"$schema": "http://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#",
+	"contentVersion": "1.0.0.0",
+	"parameters": {
+		"factoryName": {
+			"type": "string",
+			"metadata": "Data Factory name",
+			"defaultValue": "datafactory-alan"
+		}
+	},
+	"variables": {
+		"factoryId": "[concat('Microsoft.DataFactory/factories/', parameters('factoryName'))]"
+	},
+	"resources": [
+		{
+			"name": "[concat(parameters('factoryName'), '/dataflow1')]",
+			"type": "Microsoft.DataFactory/factories/dataflows",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"type": "MappingDataFlow",
+				"typeProperties": {
+					"sources": [
+						{
+							"dataset": {
+								"referenceName": "Order",
+								"type": "DatasetReference"
+							},
+							"name": "OrdersData"
+						},
+						{
+							"dataset": {
+								"referenceName": "Products",
+								"type": "DatasetReference"
+							},
+							"name": "ProductsData"
+						},
+						{
+							"dataset": {
+								"referenceName": "Customers",
+								"type": "DatasetReference"
+							},
+							"name": "CustomersData"
+						}
+					],
+					"sinks": [
+						{
+							"dataset": {
+								"referenceName": "DataflowOp",
+								"type": "DatasetReference"
+							},
+							"name": "sink1"
+						}
+					],
+					"transformations": [
+						{
+							"name": "FilterAprilData"
+						},
+						{
+							"name": "TypeCast"
+						},
+						{
+							"name": "select1"
+						},
+						{
+							"name": "cast1"
+						},
+						{
+							"name": "PhoneStatus"
+						}
+					],
+					"scriptLines": [
+						"source(output(",
+						"          OrderID as string,",
+						"          OrderDate as string,",
+						"          CustomerID as string,",
+						"          ProductID as string,",
+						"          Quantity as string,",
+						"          TotalAmount as string",
+						"     ),",
+						"     allowSchemaDrift: true,",
+						"     validateSchema: false,",
+						"     ignoreNoFilesFound: false) ~> OrdersData",
+						"source(output(",
+						"          ProductID as string,",
+						"          ProductName as string,",
+						"          Category as string,",
+						"          Price as string,",
+						"          StockQuantity as string",
+						"     ),",
+						"     allowSchemaDrift: true,",
+						"     validateSchema: false,",
+						"     ignoreNoFilesFound: false) ~> ProductsData",
+						"source(output(",
+						"          CustomerID as string,",
+						"          FirstName as string,",
+						"          LastName as string,",
+						"          Email as string,",
+						"          Phone as string,",
+						"          City as string,",
+						"          Country as string",
+						"     ),",
+						"     allowSchemaDrift: true,",
+						"     validateSchema: false,",
+						"     ignoreNoFilesFound: false) ~> CustomersData",
+						"TypeCast filter(month(OrderDate)==4) ~> FilterAprilData",
+						"OrdersData cast(output(",
+						"          OrderDate as date 'yyyy-MM-dd',",
+						"          Quantity as integer,",
+						"          TotalAmount as double",
+						"     ),",
+						"     errors: true) ~> TypeCast",
+						"cast1 select(mapColumn(",
+						"          ProductID,",
+						"          ProductName,",
+						"          ProdCat = Category,",
+						"          Price,",
+						"          StockQuantity",
+						"     ),",
+						"     skipDuplicateMapInputs: true,",
+						"     skipDuplicateMapOutputs: true) ~> select1",
+						"ProductsData cast(output(",
+						"          Price as double,",
+						"          StockQuantity as integer",
+						"     ),",
+						"     errors: true) ~> cast1",
+						"CustomersData derive(PhoneValid = iif(length(Phone)==10,'Valid','NotValid')) ~> PhoneStatus",
+						"FilterAprilData sink(allowSchemaDrift: true,",
+						"     validateSchema: false,",
+						"     deletable:false,",
+						"     insertable:true,",
+						"     updateable:false,",
+						"     upsertable:false,",
+						"     recreate:true,",
+						"     format: 'table',",
+						"     skipDuplicateMapInputs: true,",
+						"     skipDuplicateMapOutputs: true,",
+						"     errorHandlingOption: 'stopOnFirstError') ~> sink1"
+					]
+				}
+			},
+			"dependsOn": []
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/dataflow2')]",
+			"type": "Microsoft.DataFactory/factories/dataflows",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"type": "MappingDataFlow",
+				"typeProperties": {
+					"sources": [
+						{
+							"dataset": {
+								"referenceName": "Orders2023",
+								"type": "DatasetReference"
+							},
+							"name": "Order2023"
+						},
+						{
+							"dataset": {
+								"referenceName": "Order2024",
+								"type": "DatasetReference"
+							},
+							"name": "Order2024"
+						},
+						{
+							"dataset": {
+								"referenceName": "Order2025",
+								"type": "DatasetReference"
+							},
+							"name": "Order2025"
+						},
+						{
+							"dataset": {
+								"referenceName": "ProductsData",
+								"type": "DatasetReference"
+							},
+							"name": "ProductsData"
+						},
+						{
+							"dataset": {
+								"referenceName": "CustomerData",
+								"type": "DatasetReference"
+							},
+							"name": "Customers"
+						},
+						{
+							"dataset": {
+								"referenceName": "SalesExecData",
+								"type": "DatasetReference"
+							},
+							"name": "SalesExec"
+						}
+					],
+					"sinks": [
+						{
+							"dataset": {
+								"referenceName": "AzureSqlTable5",
+								"type": "DatasetReference"
+							},
+							"name": "AggregatedData"
+						},
+						{
+							"dataset": {
+								"referenceName": "OrderFinal",
+								"type": "DatasetReference"
+							},
+							"name": "OrderFinal"
+						}
+					],
+					"transformations": [
+						{
+							"name": "union1"
+						},
+						{
+							"name": "TypeCastData"
+						},
+						{
+							"name": "CustomerCast"
+						},
+						{
+							"name": "OrdersProduct"
+						},
+						{
+							"name": "DropExtraProductId"
+						},
+						{
+							"name": "BringCustomerData"
+						},
+						{
+							"name": "select1"
+						},
+						{
+							"name": "CustAgeCat"
+						},
+						{
+							"name": "aggregate1"
+						},
+						{
+							"name": "SortTotalOrders"
+						},
+						{
+							"name": "ProductRank"
+						},
+						{
+							"name": "aggregate2"
+						},
+						{
+							"name": "window1"
+						},
+						{
+							"name": "DataSplit"
+						}
+					],
+					"scriptLines": [
+						"source(output(",
+						"          OrderID as string,",
+						"          OrderDate as string,",
+						"          ProductID as string,",
+						"          Quantity as string,",
+						"          UnitPrice as string,",
+						"          CustomerID as string,",
+						"          SalesExecID as string",
+						"     ),",
+						"     allowSchemaDrift: true,",
+						"     validateSchema: false,",
+						"     ignoreNoFilesFound: false) ~> Order2023",
+						"source(output(",
+						"          OrderID as string,",
+						"          OrderDate as string,",
+						"          ProductID as string,",
+						"          Quantity as string,",
+						"          UnitPrice as string,",
+						"          CustomerID as string,",
+						"          SalesExecID as string",
+						"     ),",
+						"     allowSchemaDrift: true,",
+						"     validateSchema: false,",
+						"     ignoreNoFilesFound: false) ~> Order2024",
+						"source(output(",
+						"          OrderID as string,",
+						"          OrderDate as string,",
+						"          ProductID as string,",
+						"          Quantity as string,",
+						"          UnitPrice as string,",
+						"          CustomerID as string,",
+						"          SalesExecID as string",
+						"     ),",
+						"     allowSchemaDrift: true,",
+						"     validateSchema: false,",
+						"     ignoreNoFilesFound: false) ~> Order2025",
+						"source(output(",
+						"          ProductID as string,",
+						"          ProductName as string,",
+						"          {Product Category} as string",
+						"     ),",
+						"     allowSchemaDrift: true,",
+						"     validateSchema: false,",
+						"     ignoreNoFilesFound: false) ~> ProductsData",
+						"source(output(",
+						"          CustomerID as string,",
+						"          CustomerName as string,",
+						"          Phone as string,",
+						"          City as string,",
+						"          Country as string,",
+						"          Age as string",
+						"     ),",
+						"     allowSchemaDrift: true,",
+						"     validateSchema: false,",
+						"     ignoreNoFilesFound: false) ~> Customers",
+						"source(output(",
+						"          SalesExecID as string,",
+						"          Name as string,",
+						"          Age as string",
+						"     ),",
+						"     allowSchemaDrift: true,",
+						"     validateSchema: false,",
+						"     ignoreNoFilesFound: false) ~> SalesExec",
+						"Order2023, Order2024, Order2025 union(byName: true)~> union1",
+						"union1 cast(output(",
+						"          OrderDate as date 'yyyy-MM-dd',",
+						"          Quantity as integer,",
+						"          UnitPrice as double",
+						"     ),",
+						"     errors: true) ~> TypeCastData",
+						"Customers cast(output(",
+						"          Age as integer",
+						"     ),",
+						"     errors: true) ~> CustomerCast",
+						"TypeCastData, ProductsData join(union1@ProductID == ProductsData@ProductID,",
+						"     joinType:'left',",
+						"     matchType:'exact',",
+						"     ignoreSpaces: false,",
+						"     broadcast: 'auto')~> OrdersProduct",
+						"OrdersProduct select(mapColumn(",
+						"          OrderID,",
+						"          OrderDate,",
+						"          Quantity,",
+						"          UnitPrice,",
+						"          CustomerID,",
+						"          SalesExecID,",
+						"          ProductID = ProductsData@ProductID,",
+						"          ProductName,",
+						"          {Product Category}",
+						"     ),",
+						"     skipDuplicateMapInputs: true,",
+						"     skipDuplicateMapOutputs: true) ~> DropExtraProductId",
+						"DropExtraProductId, CustomerCast join(DropExtraProductId@CustomerID == Customers@CustomerID,",
+						"     joinType:'left',",
+						"     matchType:'exact',",
+						"     ignoreSpaces: false,",
+						"     broadcast: 'auto')~> BringCustomerData",
+						"BringCustomerData select(mapColumn(",
+						"          OrderID,",
+						"          OrderDate,",
+						"          Quantity,",
+						"          UnitPrice,",
+						"          SalesExecID,",
+						"          ProductID,",
+						"          ProductName,",
+						"          {Product Category},",
+						"          CustomerID = Customers@CustomerID,",
+						"          CustomerName,",
+						"          Phone,",
+						"          City,",
+						"          Country,",
+						"          Age",
+						"     ),",
+						"     skipDuplicateMapInputs: true,",
+						"     skipDuplicateMapOutputs: true) ~> select1",
+						"select1 derive(CustomerCat = iif(Age<=20,'Young',\r",
+						"iif(between(Age, 20, 50),'Adult',\r",
+						"'Senior Citizen')\r",
+						")) ~> CustAgeCat",
+						"CustAgeCat aggregate(groupBy(ProductName),",
+						"     TotalOrders = sum(Quantity),",
+						"          OrderAmt = round(sum(Quantity*UnitPrice),2)) ~> aggregate1",
+						"aggregate1 sort(desc(TotalOrders, true)) ~> SortTotalOrders",
+						"CustAgeCat window(over({Product Category}),",
+						"     desc(Quantity, true),",
+						"     ProductRank = rank()) ~> ProductRank",
+						"CustAgeCat aggregate(groupBy({Product Category},",
+						"          ProductName),",
+						"     TotalQuantity = sum(Quantity)) ~> aggregate2",
+						"aggregate2 window(over({Product Category}),",
+						"     desc(TotalQuantity, true),",
+						"     RankProd = rank()) ~> window1",
+						"CustAgeCat split(CustomerCat=='Young',",
+						"     CustomerCat=='Adult',",
+						"     disjoint: false) ~> DataSplit@(Young, Adult, SeniorCitizen)",
+						"window1 sink(allowSchemaDrift: true,",
+						"     validateSchema: false,",
+						"     deletable:false,",
+						"     insertable:true,",
+						"     updateable:false,",
+						"     upsertable:false,",
+						"     truncate:true,",
+						"     format: 'table',",
+						"     skipDuplicateMapInputs: true,",
+						"     skipDuplicateMapOutputs: true,",
+						"     errorHandlingOption: 'stopOnFirstError',",
+						"     partitionBy('hash', 1)) ~> AggregatedData",
+						"CustAgeCat sink(allowSchemaDrift: true,",
+						"     validateSchema: false,",
+						"     input(",
+						"          OrderID as string,",
+						"          OrderDate as string,",
+						"          ProductID as string,",
+						"          Quantity as string,",
+						"          UnitPrice as string,",
+						"          CustomerID as string,",
+						"          SalesExecID as string",
+						"     ),",
+						"     umask: 0022,",
+						"     preCommands: [],",
+						"     postCommands: [],",
+						"     skipDuplicateMapInputs: true,",
+						"     skipDuplicateMapOutputs: true) ~> OrderFinal"
+					]
+				}
+			},
+			"dependsOn": []
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/FullLoad')]",
+			"type": "Microsoft.DataFactory/factories/pipelines",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"activities": [
+					{
+						"name": "Copy data1",
+						"type": "Copy",
+						"dependsOn": [
+							{
+								"activity": "Set variable1",
+								"dependencyConditions": [
+									"Succeeded"
+								]
+							}
+						],
+						"policy": {
+							"timeout": "0.12:00:00",
+							"retry": 0,
+							"retryIntervalInSeconds": 30,
+							"secureOutput": false,
+							"secureInput": false
+						},
+						"userProperties": [],
+						"typeProperties": {
+							"source": {
+								"type": "AzureSqlSource",
+								"sqlReaderQuery": {
+									"value": "@concat('select * from dbo.Leads_og where CreatedDate>''',variables('Date'), '''')",
+									"type": "Expression"
+								},
+								"queryTimeout": "02:00:00",
+								"partitionOption": "None"
+							},
+							"sink": {
+								"type": "AzureSqlSink",
+								"preCopyScript": "Truncate Table Landing.Suhail_Leads",
+								"writeBehavior": "insert",
+								"sqlWriterUseTableLock": false,
+								"tableOption": "autoCreate",
+								"disableMetricsCollection": false
+							},
+							"enableStaging": false,
+							"translator": {
+								"type": "TabularTranslator",
+								"typeConversion": true,
+								"typeConversionSettings": {
+									"allowDataTruncation": true,
+									"treatBooleanAsNumber": false
+								}
+							}
+						},
+						"inputs": [
+							{
+								"referenceName": "AzureSqlTable6",
+								"type": "DatasetReference",
+								"parameters": {}
+							}
+						],
+						"outputs": [
+							{
+								"referenceName": "AzureSqlTable7",
+								"type": "DatasetReference",
+								"parameters": {}
+							}
+						]
+					},
+					{
+						"name": "Lookup1",
+						"type": "Lookup",
+						"dependsOn": [],
+						"policy": {
+							"timeout": "0.12:00:00",
+							"retry": 0,
+							"retryIntervalInSeconds": 30,
+							"secureOutput": false,
+							"secureInput": false
+						},
+						"userProperties": [],
+						"typeProperties": {
+							"source": {
+								"type": "AzureSqlSource",
+								"sqlReaderQuery": "select * from Cntrl.Leads_Watermark",
+								"queryTimeout": "02:00:00",
+								"partitionOption": "None"
+							},
+							"dataset": {
+								"referenceName": "AzureSqlTable7",
+								"type": "DatasetReference",
+								"parameters": {}
+							},
+							"firstRowOnly": false
+						}
+					},
+					{
+						"name": "Set variable1",
+						"type": "SetVariable",
+						"dependsOn": [
+							{
+								"activity": "Lookup1",
+								"dependencyConditions": [
+									"Succeeded"
+								]
+							}
+						],
+						"policy": {
+							"secureOutput": false,
+							"secureInput": false
+						},
+						"userProperties": [],
+						"typeProperties": {
+							"variableName": "Date",
+							"value": {
+								"value": "@formatDateTime(activity('Lookup1').output.value[0].Watermark_Datetime,'yyyy-MM-dd HH:mm:ss.fff')\n",
+								"type": "Expression"
+							}
+						}
+					},
+					{
+						"name": "Copy data2",
+						"type": "Copy",
+						"dependsOn": [
+							{
+								"activity": "Copy data1",
+								"dependencyConditions": [
+									"Succeeded"
+								]
+							}
+						],
+						"policy": {
+							"timeout": "0.12:00:00",
+							"retry": 0,
+							"retryIntervalInSeconds": 30,
+							"secureOutput": false,
+							"secureInput": false
+						},
+						"userProperties": [],
+						"typeProperties": {
+							"source": {
+								"type": "AzureSqlSource",
+								"queryTimeout": "02:00:00",
+								"partitionOption": "None"
+							},
+							"sink": {
+								"type": "AzureSqlSink",
+								"writeBehavior": "insert",
+								"sqlWriterUseTableLock": false
+							},
+							"enableStaging": false,
+							"translator": {
+								"type": "TabularTranslator",
+								"typeConversion": true,
+								"typeConversionSettings": {
+									"allowDataTruncation": true,
+									"treatBooleanAsNumber": false
+								}
+							}
+						},
+						"inputs": [
+							{
+								"referenceName": "AzureSqlTable7",
+								"type": "DatasetReference",
+								"parameters": {}
+							}
+						],
+						"outputs": [
+							{
+								"referenceName": "AzureSqlTable8",
+								"type": "DatasetReference",
+								"parameters": {}
+							}
+						]
+					},
+					{
+						"name": "Script1",
+						"type": "Script",
+						"dependsOn": [
+							{
+								"activity": "Copy data2",
+								"dependencyConditions": [
+									"Succeeded"
+								]
+							}
+						],
+						"policy": {
+							"timeout": "0.12:00:00",
+							"retry": 0,
+							"retryIntervalInSeconds": 30,
+							"secureOutput": false,
+							"secureInput": false
+						},
+						"userProperties": [],
+						"linkedServiceName": {
+							"referenceName": "AzureSqlDatabase",
+							"type": "LinkedServiceReference"
+						},
+						"typeProperties": {
+							"scripts": [
+								{
+									"type": "Query",
+									"text": {
+										"value": "Update Cntrl.Leads_Watermark\nset Watermark_Datetime = (Select MAX(CreatedDate) from Suhail.Leads)",
+										"type": "Expression"
+									}
+								}
+							],
+							"scriptBlockExecutionTimeout": "02:00:00"
+						}
+					}
+				],
+				"policy": {
+					"elapsedTimeMetric": {}
+				},
+				"variables": {
+					"Date": {
+						"type": "String"
+					}
+				},
+				"annotations": []
+			},
+			"dependsOn": []
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/FinalOrderDataFlow')]",
+			"type": "Microsoft.DataFactory/factories/pipelines",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"activities": [
+					{
+						"name": "Data flow1",
+						"type": "ExecuteDataFlow",
+						"dependsOn": [],
+						"policy": {
+							"timeout": "0.12:00:00",
+							"retry": 0,
+							"retryIntervalInSeconds": 30,
+							"secureOutput": false,
+							"secureInput": false
+						},
+						"userProperties": [],
+						"typeProperties": {
+							"dataflow": {
+								"referenceName": "dataflow2",
+								"type": "DataFlowReference",
+								"parameters": {},
+								"datasetParameters": {
+									"Order2023": {},
+									"Order2024": {},
+									"Order2025": {},
+									"ProductsData": {},
+									"Customers": {},
+									"SalesExec": {},
+									"AggregatedData": {},
+									"OrderFinal": {}
+								}
+							},
+							"staging": {},
+							"compute": {
+								"coreCount": 8,
+								"computeType": "General"
+							},
+							"traceLevel": "Fine"
+						}
+					}
+				],
+				"policy": {
+					"elapsedTimeMetric": {}
+				},
+				"annotations": []
+			},
+			"dependsOn": [
+				"[concat(variables('factoryId'), '/dataflows/dataflow2')]"
+			]
+		}
+	]
+}
