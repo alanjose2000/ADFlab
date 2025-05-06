@@ -59,6 +59,22 @@
 			"type": "int",
 			"defaultValue": 10
 		},
+		"StorageTrigger_properties_Combo_ABC_parameters_A": {
+			"type": "int",
+			"defaultValue": 5
+		},
+		"StorageTrigger_properties_Combo_ABC_parameters_B": {
+			"type": "int",
+			"defaultValue": 5
+		},
+		"StorageTrigger_properties_Combo_ABC_parameters_C": {
+			"type": "int",
+			"defaultValue": 5
+		},
+		"StorageTrigger_properties_typeProperties_scope": {
+			"type": "string",
+			"defaultValue": "/subscriptions/796630e1-c779-4137-b4b9-c128824a9067/resourceGroups/azuretraining/providers/Microsoft.Storage/storageAccounts/storageaccalan"
+		},
 		"containerUri": {
 			"type": "string",
 			"metadata": "URI to storage account containing linked ARM templates"
@@ -162,6 +178,18 @@
 					},
 					"ComboABC_properties_Combo_ABC_parameters_C": {
 						"value": "[parameters('ComboABC_properties_Combo_ABC_parameters_C')]"
+					},
+					"StorageTrigger_properties_Combo_ABC_parameters_A": {
+						"value": "[parameters('StorageTrigger_properties_Combo_ABC_parameters_A')]"
+					},
+					"StorageTrigger_properties_Combo_ABC_parameters_B": {
+						"value": "[parameters('StorageTrigger_properties_Combo_ABC_parameters_B')]"
+					},
+					"StorageTrigger_properties_Combo_ABC_parameters_C": {
+						"value": "[parameters('StorageTrigger_properties_Combo_ABC_parameters_C')]"
+					},
+					"StorageTrigger_properties_typeProperties_scope": {
+						"value": "[parameters('StorageTrigger_properties_typeProperties_scope')]"
 					}
 				}
 			},

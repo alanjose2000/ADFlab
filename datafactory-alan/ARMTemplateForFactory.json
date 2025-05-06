@@ -58,12 +58,207 @@
 		"ComboABC_properties_Combo_ABC_parameters_C": {
 			"type": "int",
 			"defaultValue": 10
+		},
+		"StorageTrigger_properties_Combo_ABC_parameters_A": {
+			"type": "int",
+			"defaultValue": 5
+		},
+		"StorageTrigger_properties_Combo_ABC_parameters_B": {
+			"type": "int",
+			"defaultValue": 5
+		},
+		"StorageTrigger_properties_Combo_ABC_parameters_C": {
+			"type": "int",
+			"defaultValue": 5
+		},
+		"StorageTrigger_properties_typeProperties_scope": {
+			"type": "string",
+			"defaultValue": "/subscriptions/796630e1-c779-4137-b4b9-c128824a9067/resourceGroups/azuretraining/providers/Microsoft.Storage/storageAccounts/storageaccalan"
 		}
 	},
 	"variables": {
 		"factoryId": "[concat('Microsoft.DataFactory/factories/', parameters('factoryName'))]"
 	},
 	"resources": [
+		{
+			"name": "[concat(parameters('factoryName'), '/ComboBC')]",
+			"type": "Microsoft.DataFactory/factories/pipelines",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"activities": [
+					{
+						"name": "PiplB",
+						"type": "ExecutePipeline",
+						"dependsOn": [],
+						"policy": {
+							"secureInput": false
+						},
+						"userProperties": [],
+						"typeProperties": {
+							"pipeline": {
+								"referenceName": "WaitB",
+								"type": "PipelineReference"
+							},
+							"waitOnCompletion": true,
+							"parameters": {
+								"WaitA": 10,
+								"WaitB": 5
+							}
+						}
+					},
+					{
+						"name": "PiplC",
+						"type": "ExecutePipeline",
+						"dependsOn": [
+							{
+								"activity": "PiplB",
+								"dependencyConditions": [
+									"Succeeded"
+								]
+							}
+						],
+						"policy": {
+							"secureInput": false
+						},
+						"userProperties": [],
+						"typeProperties": {
+							"pipeline": {
+								"referenceName": "WaitC",
+								"type": "PipelineReference"
+							},
+							"waitOnCompletion": true,
+							"parameters": {
+								"WaitA": 10,
+								"WaitB": 5,
+								"WaitC": 10
+							}
+						}
+					}
+				],
+				"policy": {
+					"elapsedTimeMetric": {}
+				},
+				"annotations": []
+			},
+			"dependsOn": [
+				"[concat(variables('factoryId'), '/pipelines/WaitB')]",
+				"[concat(variables('factoryId'), '/pipelines/WaitC')]"
+			]
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/Combo_ABC')]",
+			"type": "Microsoft.DataFactory/factories/pipelines",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"activities": [
+					{
+						"name": "PiplA",
+						"type": "ExecutePipeline",
+						"dependsOn": [],
+						"policy": {
+							"secureInput": false
+						},
+						"userProperties": [],
+						"typeProperties": {
+							"pipeline": {
+								"referenceName": "WaitA",
+								"type": "PipelineReference"
+							},
+							"waitOnCompletion": true,
+							"parameters": {
+								"WaitA": {
+									"value": "@pipeline().parameters.A",
+									"type": "Expression"
+								}
+							}
+						}
+					},
+					{
+						"name": "PiplB",
+						"type": "ExecutePipeline",
+						"dependsOn": [],
+						"policy": {
+							"secureInput": false
+						},
+						"userProperties": [],
+						"typeProperties": {
+							"pipeline": {
+								"referenceName": "WaitB",
+								"type": "PipelineReference"
+							},
+							"waitOnCompletion": true,
+							"parameters": {
+								"WaitA": {
+									"value": "@pipeline().parameters.A",
+									"type": "Expression"
+								},
+								"WaitB": {
+									"value": "@pipeline().parameters.B",
+									"type": "Expression"
+								}
+							}
+						}
+					},
+					{
+						"name": "PiplC",
+						"type": "ExecutePipeline",
+						"dependsOn": [
+							{
+								"activity": "PiplA",
+								"dependencyConditions": [
+									"Succeeded"
+								]
+							},
+							{
+								"activity": "PiplB",
+								"dependencyConditions": [
+									"Succeeded"
+								]
+							}
+						],
+						"policy": {
+							"secureInput": false
+						},
+						"userProperties": [],
+						"typeProperties": {
+							"pipeline": {
+								"referenceName": "WaitC",
+								"type": "PipelineReference"
+							},
+							"waitOnCompletion": true,
+							"parameters": {
+								"WaitA": 10,
+								"WaitB": 5,
+								"WaitC": {
+									"value": "@pipeline().parameters.C",
+									"type": "Expression"
+								}
+							}
+						}
+					}
+				],
+				"policy": {
+					"elapsedTimeMetric": {}
+				},
+				"parameters": {
+					"A": {
+						"type": "int"
+					},
+					"B": {
+						"type": "int"
+					},
+					"C": {
+						"type": "int"
+					}
+				},
+				"annotations": []
+			},
+			"dependsOn": [
+				"[concat(variables('factoryId'), '/pipelines/WaitA')]",
+				"[concat(variables('factoryId'), '/pipelines/WaitB')]",
+				"[concat(variables('factoryId'), '/pipelines/WaitC')]"
+			]
+		},
 		{
 			"name": "[concat(parameters('factoryName'), '/FinalOrderDataFlow')]",
 			"type": "Microsoft.DataFactory/factories/pipelines",
@@ -1170,6 +1365,117 @@
 				"[concat(variables('factoryId'), '/datasets/ParameterizedCsvData')]",
 				"[concat(variables('factoryId'), '/datasets/ParameterizedSqlTable')]"
 			]
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/WaitA')]",
+			"type": "Microsoft.DataFactory/factories/pipelines",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"activities": [
+					{
+						"name": "WaitA",
+						"type": "Wait",
+						"dependsOn": [],
+						"userProperties": [],
+						"typeProperties": {
+							"waitTimeInSeconds": {
+								"value": "@pipeline().parameters.WaitA",
+								"type": "Expression"
+							}
+						}
+					}
+				],
+				"policy": {
+					"elapsedTimeMetric": {}
+				},
+				"parameters": {
+					"WaitA": {
+						"type": "int"
+					}
+				},
+				"annotations": [
+					"ComboPipeline"
+				]
+			},
+			"dependsOn": []
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/WaitB')]",
+			"type": "Microsoft.DataFactory/factories/pipelines",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"activities": [
+					{
+						"name": "WaitB",
+						"type": "Wait",
+						"dependsOn": [],
+						"userProperties": [],
+						"typeProperties": {
+							"waitTimeInSeconds": {
+								"value": "@pipeline().parameters.WaitB",
+								"type": "Expression"
+							}
+						}
+					}
+				],
+				"policy": {
+					"elapsedTimeMetric": {}
+				},
+				"parameters": {
+					"WaitA": {
+						"type": "int"
+					},
+					"WaitB": {
+						"type": "int"
+					},
+					"WaitC": {
+						"type": "int"
+					}
+				},
+				"annotations": [
+					"ComboPipeline"
+				]
+			},
+			"dependsOn": []
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/WaitC')]",
+			"type": "Microsoft.DataFactory/factories/pipelines",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"activities": [
+					{
+						"name": "WaitC",
+						"type": "Wait",
+						"dependsOn": [],
+						"userProperties": [],
+						"typeProperties": {
+							"waitTimeInSeconds": {
+								"value": "@pipeline().parameters.WaitC",
+								"type": "Expression"
+							}
+						}
+					}
+				],
+				"policy": {
+					"elapsedTimeMetric": {}
+				},
+				"parameters": {
+					"WaitA": {
+						"type": "int"
+					},
+					"WaitB": {
+						"type": "int"
+					},
+					"WaitC": {
+						"type": "int"
+					}
+				},
+				"annotations": [
+					"ComboPipeline"
+				]
+			},
+			"dependsOn": []
 		},
 		{
 			"name": "[concat(parameters('factoryName'), '/adlstosql')]",
@@ -2895,6 +3201,48 @@
 			"dependsOn": []
 		},
 		{
+			"name": "[concat(parameters('factoryName'), '/ComboABC')]",
+			"type": "Microsoft.DataFactory/factories/triggers",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"annotations": [],
+				"runtimeState": "Started",
+				"pipelines": [
+					{
+						"pipelineReference": {
+							"referenceName": "Combo_ABC",
+							"type": "PipelineReference"
+						},
+						"parameters": {
+							"A": "[parameters('ComboABC_properties_Combo_ABC_parameters_A')]",
+							"B": "[parameters('ComboABC_properties_Combo_ABC_parameters_B')]",
+							"C": "[parameters('ComboABC_properties_Combo_ABC_parameters_C')]"
+						}
+					}
+				],
+				"type": "ScheduleTrigger",
+				"typeProperties": {
+					"recurrence": {
+						"frequency": "Day",
+						"interval": 1,
+						"startTime": "2025-05-06T05:05:00",
+						"timeZone": "India Standard Time",
+						"schedule": {
+							"minutes": [
+								45
+							],
+							"hours": [
+								11
+							]
+						}
+					}
+				}
+			},
+			"dependsOn": [
+				"[concat(variables('factoryId'), '/pipelines/Combo_ABC')]"
+			]
+		},
+		{
 			"name": "[concat(parameters('factoryName'), '/dataflow1')]",
 			"type": "Microsoft.DataFactory/factories/dataflows",
 			"apiVersion": "2018-06-01",
@@ -3317,297 +3665,7 @@
 			]
 		},
 		{
-			"name": "[concat(parameters('factoryName'), '/WaitA')]",
-			"type": "Microsoft.DataFactory/factories/pipelines",
-			"apiVersion": "2018-06-01",
-			"properties": {
-				"activities": [
-					{
-						"name": "WaitA",
-						"type": "Wait",
-						"dependsOn": [],
-						"userProperties": [],
-						"typeProperties": {
-							"waitTimeInSeconds": {
-								"value": "@pipeline().parameters.WaitA",
-								"type": "Expression"
-							}
-						}
-					}
-				],
-				"policy": {
-					"elapsedTimeMetric": {}
-				},
-				"parameters": {
-					"WaitA": {
-						"type": "int"
-					}
-				},
-				"annotations": [
-					"ComboPipeline"
-				]
-			},
-			"dependsOn": []
-		},
-		{
-			"name": "[concat(parameters('factoryName'), '/WaitB')]",
-			"type": "Microsoft.DataFactory/factories/pipelines",
-			"apiVersion": "2018-06-01",
-			"properties": {
-				"activities": [
-					{
-						"name": "WaitB",
-						"type": "Wait",
-						"dependsOn": [],
-						"userProperties": [],
-						"typeProperties": {
-							"waitTimeInSeconds": {
-								"value": "@pipeline().parameters.WaitB",
-								"type": "Expression"
-							}
-						}
-					}
-				],
-				"policy": {
-					"elapsedTimeMetric": {}
-				},
-				"parameters": {
-					"WaitA": {
-						"type": "int"
-					},
-					"WaitB": {
-						"type": "int"
-					},
-					"WaitC": {
-						"type": "int"
-					}
-				},
-				"annotations": [
-					"ComboPipeline"
-				]
-			},
-			"dependsOn": []
-		},
-		{
-			"name": "[concat(parameters('factoryName'), '/WaitC')]",
-			"type": "Microsoft.DataFactory/factories/pipelines",
-			"apiVersion": "2018-06-01",
-			"properties": {
-				"activities": [
-					{
-						"name": "WaitC",
-						"type": "Wait",
-						"dependsOn": [],
-						"userProperties": [],
-						"typeProperties": {
-							"waitTimeInSeconds": {
-								"value": "@pipeline().parameters.WaitC",
-								"type": "Expression"
-							}
-						}
-					}
-				],
-				"policy": {
-					"elapsedTimeMetric": {}
-				},
-				"parameters": {
-					"WaitA": {
-						"type": "int"
-					},
-					"WaitB": {
-						"type": "int"
-					},
-					"WaitC": {
-						"type": "int"
-					}
-				},
-				"annotations": [
-					"ComboPipeline"
-				]
-			},
-			"dependsOn": []
-		},
-		{
-			"name": "[concat(parameters('factoryName'), '/Combo_ABC')]",
-			"type": "Microsoft.DataFactory/factories/pipelines",
-			"apiVersion": "2018-06-01",
-			"properties": {
-				"activities": [
-					{
-						"name": "PiplA",
-						"type": "ExecutePipeline",
-						"dependsOn": [],
-						"policy": {
-							"secureInput": false
-						},
-						"userProperties": [],
-						"typeProperties": {
-							"pipeline": {
-								"referenceName": "WaitA",
-								"type": "PipelineReference"
-							},
-							"waitOnCompletion": true,
-							"parameters": {
-								"WaitA": {
-									"value": "@pipeline().parameters.A",
-									"type": "Expression"
-								}
-							}
-						}
-					},
-					{
-						"name": "PiplB",
-						"type": "ExecutePipeline",
-						"dependsOn": [],
-						"policy": {
-							"secureInput": false
-						},
-						"userProperties": [],
-						"typeProperties": {
-							"pipeline": {
-								"referenceName": "WaitB",
-								"type": "PipelineReference"
-							},
-							"waitOnCompletion": true,
-							"parameters": {
-								"WaitA": {
-									"value": "@pipeline().parameters.A",
-									"type": "Expression"
-								},
-								"WaitB": {
-									"value": "@pipeline().parameters.B",
-									"type": "Expression"
-								}
-							}
-						}
-					},
-					{
-						"name": "PiplC",
-						"type": "ExecutePipeline",
-						"dependsOn": [
-							{
-								"activity": "PiplA",
-								"dependencyConditions": [
-									"Succeeded"
-								]
-							},
-							{
-								"activity": "PiplB",
-								"dependencyConditions": [
-									"Succeeded"
-								]
-							}
-						],
-						"policy": {
-							"secureInput": false
-						},
-						"userProperties": [],
-						"typeProperties": {
-							"pipeline": {
-								"referenceName": "WaitC",
-								"type": "PipelineReference"
-							},
-							"waitOnCompletion": true,
-							"parameters": {
-								"WaitA": 10,
-								"WaitB": 5,
-								"WaitC": {
-									"value": "@pipeline().parameters.C",
-									"type": "Expression"
-								}
-							}
-						}
-					}
-				],
-				"policy": {
-					"elapsedTimeMetric": {}
-				},
-				"parameters": {
-					"A": {
-						"type": "int"
-					},
-					"B": {
-						"type": "int"
-					},
-					"C": {
-						"type": "int"
-					}
-				},
-				"annotations": []
-			},
-			"dependsOn": [
-				"[concat(variables('factoryId'), '/pipelines/WaitA')]",
-				"[concat(variables('factoryId'), '/pipelines/WaitB')]",
-				"[concat(variables('factoryId'), '/pipelines/WaitC')]"
-			]
-		},
-		{
-			"name": "[concat(parameters('factoryName'), '/ComboBC')]",
-			"type": "Microsoft.DataFactory/factories/pipelines",
-			"apiVersion": "2018-06-01",
-			"properties": {
-				"activities": [
-					{
-						"name": "PiplB",
-						"type": "ExecutePipeline",
-						"dependsOn": [],
-						"policy": {
-							"secureInput": false
-						},
-						"userProperties": [],
-						"typeProperties": {
-							"pipeline": {
-								"referenceName": "WaitB",
-								"type": "PipelineReference"
-							},
-							"waitOnCompletion": true,
-							"parameters": {
-								"WaitA": 10,
-								"WaitB": 5
-							}
-						}
-					},
-					{
-						"name": "PiplC",
-						"type": "ExecutePipeline",
-						"dependsOn": [
-							{
-								"activity": "PiplB",
-								"dependencyConditions": [
-									"Succeeded"
-								]
-							}
-						],
-						"policy": {
-							"secureInput": false
-						},
-						"userProperties": [],
-						"typeProperties": {
-							"pipeline": {
-								"referenceName": "WaitC",
-								"type": "PipelineReference"
-							},
-							"waitOnCompletion": true,
-							"parameters": {
-								"WaitA": 10,
-								"WaitB": 5,
-								"WaitC": 10
-							}
-						}
-					}
-				],
-				"policy": {
-					"elapsedTimeMetric": {}
-				},
-				"annotations": []
-			},
-			"dependsOn": [
-				"[concat(variables('factoryId'), '/pipelines/WaitB')]",
-				"[concat(variables('factoryId'), '/pipelines/WaitC')]"
-			]
-		},
-		{
-			"name": "[concat(parameters('factoryName'), '/ComboABC')]",
+			"name": "[concat(parameters('factoryName'), '/StorageTrigger')]",
 			"type": "Microsoft.DataFactory/factories/triggers",
 			"apiVersion": "2018-06-01",
 			"properties": {
@@ -3620,28 +3678,21 @@
 							"type": "PipelineReference"
 						},
 						"parameters": {
-							"A": "[parameters('ComboABC_properties_Combo_ABC_parameters_A')]",
-							"B": "[parameters('ComboABC_properties_Combo_ABC_parameters_B')]",
-							"C": "[parameters('ComboABC_properties_Combo_ABC_parameters_C')]"
+							"A": "[parameters('StorageTrigger_properties_Combo_ABC_parameters_A')]",
+							"B": "[parameters('StorageTrigger_properties_Combo_ABC_parameters_B')]",
+							"C": "[parameters('StorageTrigger_properties_Combo_ABC_parameters_C')]"
 						}
 					}
 				],
-				"type": "ScheduleTrigger",
+				"type": "BlobEventsTrigger",
 				"typeProperties": {
-					"recurrence": {
-						"frequency": "Day",
-						"interval": 1,
-						"startTime": "2025-05-06T05:05:00",
-						"timeZone": "India Standard Time",
-						"schedule": {
-							"minutes": [
-								45
-							],
-							"hours": [
-								11
-							]
-						}
-					}
+					"blobPathBeginsWith": "/data/blobs/Abc/",
+					"blobPathEndsWith": "orders_data.csv",
+					"ignoreEmptyBlobs": true,
+					"scope": "[parameters('StorageTrigger_properties_typeProperties_scope')]",
+					"events": [
+						"Microsoft.Storage.BlobCreated"
+					]
 				}
 			},
 			"dependsOn": [

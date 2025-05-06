@@ -18,6 +18,22 @@
 		"ComboABC_properties_Combo_ABC_parameters_C": {
 			"type": "int",
 			"defaultValue": 10
+		},
+		"StorageTrigger_properties_Combo_ABC_parameters_A": {
+			"type": "int",
+			"defaultValue": 5
+		},
+		"StorageTrigger_properties_Combo_ABC_parameters_B": {
+			"type": "int",
+			"defaultValue": 5
+		},
+		"StorageTrigger_properties_Combo_ABC_parameters_C": {
+			"type": "int",
+			"defaultValue": 5
+		},
+		"StorageTrigger_properties_typeProperties_scope": {
+			"type": "string",
+			"defaultValue": "/subscriptions/796630e1-c779-4137-b4b9-c128824a9067/resourceGroups/azuretraining/providers/Microsoft.Storage/storageAccounts/storageaccalan"
 		}
 	},
 	"variables": {
@@ -976,6 +992,46 @@
 			"dependsOn": []
 		},
 		{
+			"name": "[concat(parameters('factoryName'), '/ComboABC')]",
+			"type": "Microsoft.DataFactory/factories/triggers",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"annotations": [],
+				"runtimeState": "Started",
+				"pipelines": [
+					{
+						"pipelineReference": {
+							"referenceName": "Combo_ABC",
+							"type": "PipelineReference"
+						},
+						"parameters": {
+							"A": "[parameters('ComboABC_properties_Combo_ABC_parameters_A')]",
+							"B": "[parameters('ComboABC_properties_Combo_ABC_parameters_B')]",
+							"C": "[parameters('ComboABC_properties_Combo_ABC_parameters_C')]"
+						}
+					}
+				],
+				"type": "ScheduleTrigger",
+				"typeProperties": {
+					"recurrence": {
+						"frequency": "Day",
+						"interval": 1,
+						"startTime": "2025-05-06T05:05:00",
+						"timeZone": "India Standard Time",
+						"schedule": {
+							"minutes": [
+								45
+							],
+							"hours": [
+								11
+							]
+						}
+					}
+				}
+			},
+			"dependsOn": []
+		},
+		{
 			"name": "[concat(parameters('factoryName'), '/dataflow1')]",
 			"type": "Microsoft.DataFactory/factories/dataflows",
 			"apiVersion": "2018-06-01",
@@ -1384,7 +1440,7 @@
 			"dependsOn": []
 		},
 		{
-			"name": "[concat(parameters('factoryName'), '/ComboABC')]",
+			"name": "[concat(parameters('factoryName'), '/StorageTrigger')]",
 			"type": "Microsoft.DataFactory/factories/triggers",
 			"apiVersion": "2018-06-01",
 			"properties": {
@@ -1397,28 +1453,21 @@
 							"type": "PipelineReference"
 						},
 						"parameters": {
-							"A": "[parameters('ComboABC_properties_Combo_ABC_parameters_A')]",
-							"B": "[parameters('ComboABC_properties_Combo_ABC_parameters_B')]",
-							"C": "[parameters('ComboABC_properties_Combo_ABC_parameters_C')]"
+							"A": "[parameters('StorageTrigger_properties_Combo_ABC_parameters_A')]",
+							"B": "[parameters('StorageTrigger_properties_Combo_ABC_parameters_B')]",
+							"C": "[parameters('StorageTrigger_properties_Combo_ABC_parameters_C')]"
 						}
 					}
 				],
-				"type": "ScheduleTrigger",
+				"type": "BlobEventsTrigger",
 				"typeProperties": {
-					"recurrence": {
-						"frequency": "Day",
-						"interval": 1,
-						"startTime": "2025-05-06T05:05:00",
-						"timeZone": "India Standard Time",
-						"schedule": {
-							"minutes": [
-								45
-							],
-							"hours": [
-								11
-							]
-						}
-					}
+					"blobPathBeginsWith": "/data/blobs/Abc/",
+					"blobPathEndsWith": "orders_data.csv",
+					"ignoreEmptyBlobs": true,
+					"scope": "[parameters('StorageTrigger_properties_typeProperties_scope')]",
+					"events": [
+						"Microsoft.Storage.BlobCreated"
+					]
 				}
 			},
 			"dependsOn": []
