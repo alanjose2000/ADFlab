@@ -20,6 +20,8 @@
 				"type": "int"
 			}
 		},
-		"annotations": []
+		"annotations": [
+			"ComboPipeline"
+		]
 	}
 }
