@@ -17,7 +17,10 @@
 					},
 					"waitOnCompletion": true,
 					"parameters": {
-						"WaitA": 10
+						"WaitA": {
+							"value": "@pipeline().parameters.A",
+							"type": "Expression"
+						}
 					}
 				}
 			},
@@ -36,8 +39,14 @@
 					},
 					"waitOnCompletion": true,
 					"parameters": {
-						"WaitA": 10,
-						"WaitB": 5
+						"WaitA": {
+							"value": "@pipeline().parameters.A",
+							"type": "Expression"
+						},
+						"WaitB": {
+							"value": "@pipeline().parameters.B",
+							"type": "Expression"
+						}
 					}
 				}
 			},
@@ -71,11 +80,25 @@
 					"parameters": {
 						"WaitA": 10,
 						"WaitB": 5,
-						"WaitC": 10
+						"WaitC": {
+							"value": "@pipeline().parameters.C",
+							"type": "Expression"
+						}
 					}
 				}
 			}
 		],
+		"parameters": {
+			"A": {
+				"type": "int"
+			},
+			"B": {
+				"type": "int"
+			},
+			"C": {
+				"type": "int"
+			}
+		},
 		"annotations": []
 	}
 }
