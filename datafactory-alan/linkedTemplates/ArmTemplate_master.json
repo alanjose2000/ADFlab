@@ -47,6 +47,18 @@
 			"type": "string",
 			"defaultValue": "sqladmin"
 		},
+		"ComboABC_properties_Combo_ABC_parameters_A": {
+			"type": "int",
+			"defaultValue": 5
+		},
+		"ComboABC_properties_Combo_ABC_parameters_B": {
+			"type": "int",
+			"defaultValue": 5
+		},
+		"ComboABC_properties_Combo_ABC_parameters_C": {
+			"type": "int",
+			"defaultValue": 10
+		},
 		"containerUri": {
 			"type": "string",
 			"metadata": "URI to storage account containing linked ARM templates"
@@ -141,6 +153,15 @@
 				"parameters": {
 					"factoryName": {
 						"value": "[parameters('factoryName')]"
+					},
+					"ComboABC_properties_Combo_ABC_parameters_A": {
+						"value": "[parameters('ComboABC_properties_Combo_ABC_parameters_A')]"
+					},
+					"ComboABC_properties_Combo_ABC_parameters_B": {
+						"value": "[parameters('ComboABC_properties_Combo_ABC_parameters_B')]"
+					},
+					"ComboABC_properties_Combo_ABC_parameters_C": {
+						"value": "[parameters('ComboABC_properties_Combo_ABC_parameters_C')]"
 					}
 				}
 			},

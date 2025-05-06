@@ -46,6 +46,18 @@
 		"SuhailsDB_properties_typeProperties_userName": {
 			"type": "string",
 			"defaultValue": "sqladmin"
+		},
+		"ComboABC_properties_Combo_ABC_parameters_A": {
+			"type": "int",
+			"defaultValue": 5
+		},
+		"ComboABC_properties_Combo_ABC_parameters_B": {
+			"type": "int",
+			"defaultValue": 5
+		},
+		"ComboABC_properties_Combo_ABC_parameters_C": {
+			"type": "int",
+			"defaultValue": 10
 		}
 	},
 	"variables": {
@@ -3436,7 +3448,10 @@
 							},
 							"waitOnCompletion": true,
 							"parameters": {
-								"WaitA": 10
+								"WaitA": {
+									"value": "@pipeline().parameters.A",
+									"type": "Expression"
+								}
 							}
 						}
 					},
@@ -3455,8 +3470,14 @@
 							},
 							"waitOnCompletion": true,
 							"parameters": {
-								"WaitA": 10,
-								"WaitB": 5
+								"WaitA": {
+									"value": "@pipeline().parameters.A",
+									"type": "Expression"
+								},
+								"WaitB": {
+									"value": "@pipeline().parameters.B",
+									"type": "Expression"
+								}
 							}
 						}
 					},
@@ -3490,6 +3511,86 @@
 							"parameters": {
 								"WaitA": 10,
 								"WaitB": 5,
+								"WaitC": {
+									"value": "@pipeline().parameters.C",
+									"type": "Expression"
+								}
+							}
+						}
+					}
+				],
+				"policy": {
+					"elapsedTimeMetric": {}
+				},
+				"parameters": {
+					"A": {
+						"type": "int"
+					},
+					"B": {
+						"type": "int"
+					},
+					"C": {
+						"type": "int"
+					}
+				},
+				"annotations": []
+			},
+			"dependsOn": [
+				"[concat(variables('factoryId'), '/pipelines/WaitA')]",
+				"[concat(variables('factoryId'), '/pipelines/WaitB')]",
+				"[concat(variables('factoryId'), '/pipelines/WaitC')]"
+			]
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/ComboBC')]",
+			"type": "Microsoft.DataFactory/factories/pipelines",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"activities": [
+					{
+						"name": "PiplB",
+						"type": "ExecutePipeline",
+						"dependsOn": [],
+						"policy": {
+							"secureInput": false
+						},
+						"userProperties": [],
+						"typeProperties": {
+							"pipeline": {
+								"referenceName": "WaitB",
+								"type": "PipelineReference"
+							},
+							"waitOnCompletion": true,
+							"parameters": {
+								"WaitA": 10,
+								"WaitB": 5
+							}
+						}
+					},
+					{
+						"name": "PiplC",
+						"type": "ExecutePipeline",
+						"dependsOn": [
+							{
+								"activity": "PiplB",
+								"dependencyConditions": [
+									"Succeeded"
+								]
+							}
+						],
+						"policy": {
+							"secureInput": false
+						},
+						"userProperties": [],
+						"typeProperties": {
+							"pipeline": {
+								"referenceName": "WaitC",
+								"type": "PipelineReference"
+							},
+							"waitOnCompletion": true,
+							"parameters": {
+								"WaitA": 10,
+								"WaitB": 5,
 								"WaitC": 10
 							}
 						}
@@ -3501,9 +3602,50 @@
 				"annotations": []
 			},
 			"dependsOn": [
-				"[concat(variables('factoryId'), '/pipelines/WaitA')]",
 				"[concat(variables('factoryId'), '/pipelines/WaitB')]",
 				"[concat(variables('factoryId'), '/pipelines/WaitC')]"
+			]
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/ComboABC')]",
+			"type": "Microsoft.DataFactory/factories/triggers",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"annotations": [],
+				"runtimeState": "Started",
+				"pipelines": [
+					{
+						"pipelineReference": {
+							"referenceName": "Combo_ABC",
+							"type": "PipelineReference"
+						},
+						"parameters": {
+							"A": "[parameters('ComboABC_properties_Combo_ABC_parameters_A')]",
+							"B": "[parameters('ComboABC_properties_Combo_ABC_parameters_B')]",
+							"C": "[parameters('ComboABC_properties_Combo_ABC_parameters_C')]"
+						}
+					}
+				],
+				"type": "ScheduleTrigger",
+				"typeProperties": {
+					"recurrence": {
+						"frequency": "Day",
+						"interval": 1,
+						"startTime": "2025-05-06T05:05:00",
+						"timeZone": "India Standard Time",
+						"schedule": {
+							"minutes": [
+								45
+							],
+							"hours": [
+								11
+							]
+						}
+					}
+				}
+			},
+			"dependsOn": [
+				"[concat(variables('factoryId'), '/pipelines/Combo_ABC')]"
 			]
 		}
 	]

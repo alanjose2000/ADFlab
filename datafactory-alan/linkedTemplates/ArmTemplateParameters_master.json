@@ -35,6 +35,15 @@
 		"SuhailsDB_properties_typeProperties_userName": {
 			"value": "sqladmin"
 		},
+		"ComboABC_properties_Combo_ABC_parameters_A": {
+			"value": 5
+		},
+		"ComboABC_properties_Combo_ABC_parameters_B": {
+			"value": 5
+		},
+		"ComboABC_properties_Combo_ABC_parameters_C": {
+			"value": 10
+		},
 		"containerUri": {
 			"value": ""
 		},
