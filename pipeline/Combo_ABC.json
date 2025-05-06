@@ -1,0 +1,81 @@
+{
+	"name": "Combo_ABC",
+	"properties": {
+		"activities": [
+			{
+				"name": "PiplA",
+				"type": "ExecutePipeline",
+				"dependsOn": [],
+				"policy": {
+					"secureInput": false
+				},
+				"userProperties": [],
+				"typeProperties": {
+					"pipeline": {
+						"referenceName": "WaitA",
+						"type": "PipelineReference"
+					},
+					"waitOnCompletion": true,
+					"parameters": {
+						"WaitA": 10
+					}
+				}
+			},
+			{
+				"name": "PiplB",
+				"type": "ExecutePipeline",
+				"dependsOn": [],
+				"policy": {
+					"secureInput": false
+				},
+				"userProperties": [],
+				"typeProperties": {
+					"pipeline": {
+						"referenceName": "WaitB",
+						"type": "PipelineReference"
+					},
+					"waitOnCompletion": true,
+					"parameters": {
+						"WaitA": 10,
+						"WaitB": 5
+					}
+				}
+			},
+			{
+				"name": "PiplC",
+				"type": "ExecutePipeline",
+				"dependsOn": [
+					{
+						"activity": "PiplA",
+						"dependencyConditions": [
+							"Succeeded"
+						]
+					},
+					{
+						"activity": "PiplB",
+						"dependencyConditions": [
+							"Succeeded"
+						]
+					}
+				],
+				"policy": {
+					"secureInput": false
+				},
+				"userProperties": [],
+				"typeProperties": {
+					"pipeline": {
+						"referenceName": "WaitC",
+						"type": "PipelineReference"
+					},
+					"waitOnCompletion": true,
+					"parameters": {
+						"WaitA": 10,
+						"WaitB": 5,
+						"WaitC": 10
+					}
+				}
+			}
+		],
+		"annotations": []
+	}
+}
