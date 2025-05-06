@@ -1,0 +1,30 @@
+{
+	"name": "StorageTrigger",
+	"properties": {
+		"annotations": [],
+		"runtimeState": "Started",
+		"pipelines": [
+			{
+				"pipelineReference": {
+					"referenceName": "Combo_ABC",
+					"type": "PipelineReference"
+				},
+				"parameters": {
+					"A": 5,
+					"B": 5,
+					"C": 5
+				}
+			}
+		],
+		"type": "BlobEventsTrigger",
+		"typeProperties": {
+			"blobPathBeginsWith": "/data/blobs/Abc/",
+			"blobPathEndsWith": "orders_data.csv",
+			"ignoreEmptyBlobs": true,
+			"scope": "/subscriptions/796630e1-c779-4137-b4b9-c128824a9067/resourceGroups/azuretraining/providers/Microsoft.Storage/storageAccounts/storageaccalan",
+			"events": [
+				"Microsoft.Storage.BlobCreated"
+			]
+		}
+	}
+}
